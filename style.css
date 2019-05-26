@@ -1,0 +1,9 @@
+body {
+  text-align: center;
+  background: white;
+}
+
+#maze {
+  margin-left: 10px;
+  margin-right: 10px;
+}
