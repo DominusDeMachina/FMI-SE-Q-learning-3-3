@@ -5,6 +5,8 @@ const PLATE_SIZE = 100;
 const START_STATE_IDX = 90;
 const END_STATE_IDX = 39;
 
+let SLEEP = 100;
+
 
 const ACTIONS = [
   { x: 0, y: -1 }, // UP
@@ -143,10 +145,16 @@ function pressButton(key) {
     case 39:
       action = 3;
       break;
+    case 107:
+      SLEEP -= 50;
+      break;
+    case 109:
+      SLEEP += 50;
+      break;
     default:
       break;
   }
-  movePlayer(action);
+  // movePlayer(action);
 }
 
 function movePlayer(action) {
@@ -224,23 +232,28 @@ function selectRandomAction() {
 }
 
 // parameters
-const NUM_EPISODES = 10000
+const NUM_EPISODES = 100
 const MAX_STEPS_IN_EPISODE = 100
 const LEARNING_RATE = 0.1
 const DISCOUNT_RATE = 0.99
 const MIN_EXPLORATION_RATE = 0.01
 const MAX_EXPLORATION_RATE = 1
-const EXPLORATION_DECAY_RATE = 0.01
+const EXPLORATION_DECAY_RATE = 0.1
 
 let explorationRate = 1
 let rewardsAllEpisodes = Array(NUM_EPISODES);
 
-function qlearning() {
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+async function qlearning() {
   for (let episode = 0; episode <= NUM_EPISODES; episode++) {
     let currentState = START_STATE_IDX;
+    player.x = getCoordinatesFromState(currentState).x;
+    player.y = getCoordinatesFromState(currentState).y;
+    player.drawPlayer();
     isEnd = false;
     let currentReward = 0;
-    let stepCounter = 0;
     for (let step = 0; step <= MAX_STEPS_IN_EPISODE; step++) {
       let action;
       let explorationRateThreshold = Math.random();
@@ -249,6 +262,7 @@ function qlearning() {
       } else {
         action = selectRandomAction();
       }
+      await sleep(SLEEP);
       let result = movePlayer(action);
       let newState = result.nextState;
       let reward = result.reward;
@@ -261,6 +275,7 @@ function qlearning() {
     }
     explorationRate = MIN_EXPLORATION_RATE + (MAX_EXPLORATION_RATE - MIN_EXPLORATION_RATE) * Math.exp(-EXPLORATION_DECAY_RATE*episode)
     rewardsAllEpisodes.push(currentReward);
+    console.log(episode, currentReward);
   }
   console.log(Q);
 }
